@@ -3,7 +3,7 @@
 This peer assessed assignment has two parts. First, you will create a Shiny application and deploy it on Rstudio's servers. Second, you will use Slidify or Rstudio Presenter to prepare a reproducible pitch presentation about your application.
 
 ## Dataset
-The mtcars dataset will be used for this project, focusing on exploring the relationship between the performace of cars measured in miles per gallon (mpg) and a set of other variables
+The mtcars dataset will be used for this project and reuse the analysis made for the "Regression Models Course" project with the aim to explore the relationship between the performace of cars measured in miles per gallon (mpg) and a set of other variables.
 
 ## Part 1: Shiny Application
 1. Write a shiny application with associated supporting documentation. The documentation should be thought of as whatever a user will need to get started using your application.
