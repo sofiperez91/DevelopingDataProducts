@@ -1,0 +1,141 @@
+---
+title: "Regression Models Course Project"
+author: Sofia Perez
+date: 06/04/21
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Executive Summary
+
+This report was prepared as a part of Regression Models Course by Johns Hopkins University.
+
+The aim of the report is to explore the relationship between the performace of cars measured in miles per gallon (mpg) and a set of other variables from the dataset *mtcars*. 
+
+The analysis detailed below intends to demostrate that:
+
+- Manual transmission cars have higher performance compared to automatic transmission cars.
+- Only 35% of the variance in mpg can be attributed to transmission types. Other variables have a strong impact in cars performance and should be included in the model. These variable are: cylinders (cyl), power (hp) and weight (wt).
+
+
+## Data Analysis
+The first step is to load the dataset and take a look at the data in it.
+
+```{r echo=FALSE}
+#Load dataset
+data(mtcars)
+#Sample of the dataset
+head(mtcars,3)
+```
+```{r echo=FALSE}
+mtcars$am <- as.factor(mtcars$am)
+mtcars$tx_type <- factor(mtcars$am, labels=c("Automatic","Manual"))
+mtcars$cyl <- as.factor(mtcars$cyl)
+mtcars$vs <- as.factor(mtcars$vs)
+mtcars$gear <- as.factor(mtcars$gear)
+mtcars$carb <- as.factor(mtcars$carb)
+```
+
+To compare performance in terms of transmission types we can first take a look at the means:
+
+**Manual transmission (am=1)**
+```{r echo=FALSE}
+summary(mtcars[mtcars$am==1,]$mpg)
+```
+**Automatic transmission (am=0)**
+```{r echo=FALSE}
+summary(mtcars[mtcars$am==0,]$mpg)
+```
+From the boxplot shown in Appendix A1 it seems 
+that manual transmission cars perform better. To confirm this, a t-test was conducted.
+
+```{r}
+p_value<-t.test(mpg~am, mtcars)$p.value
+```
+
+As the p-value is ~`r round(p_value,4)`, we can reject the null hypothesis and conclude, that manual transmission cars have higher performance in terms of mpg compared to automatic transmission cars. This statements assumes all other characteristics remain the same, so further analysis should be performed.
+
+## Regression Models
+First we analize the simple linear regression:
+
+```{r}
+fit<-lm(mpg ~ am, mtcars)
+r_squared<-summary(fit)$r.squared
+```
+
+Considering that the R-squared value for this test is ~`r round(summary(fit)$r.squared,2)`. Which means that only `r round(summary(fit)$r.squared,2)*100`% of the variance can be attributed to transmission types. This confirms that other variables should be taken into account in the study.
+
+Mutivariable regression should be analized:
+
+```{r}
+fit2<-lm(mpg ~ ., mtcars)
+```
+
+The function *step()* was used for choosing the best model. The function basically will remove variables and analize the AIC until it obtains the lower value. 
+
+```{r include=FALSE}
+fit3 <- step(fit2, direction = "backward")
+```
+
+```{r}
+summary(fit3)$coef
+r_squared2<-summary(fit3)$r.squared
+```
+
+Considering that the R-squared value for this test is ~`r round(summary(fit3)$r.squared,2)` Which means that over `r round(summary(fit3)$r.squared,2)*100`% of the variance in mpg can be attributed to the variables: cylinders (cyl), power (hp), weight (wt) and transmission type (am). 
+
+
+## Residual Analysis
+
+When analyzing the "Residuals vs Fitted" plot in Appendix A3, it appears to be randomly scattered, meaning the residuals are homoscedastic. Also observing the "Q-Q" plot, it shows that most points fall in the line, meaning the residuals have a normal distribution.
+
+## Conclusion
+
+**Is an automatic or manual transmission better for MPG?**
+
+In terms of MPG, manual transmission cars are better. On average manual transmission cars can achieve a performace of `r round(mean(mtcars[mtcars$am==1,]$mpg),2)`mpg whereas automatic ones achieve only `r round(mean(mtcars[mtcars$am==0,]$mpg),2)`mpg. This statement assumes all other variables constant. 
+
+**Quantify the MPG difference between automatic and manual transmissions**
+
+Further analysis shows that when incluing other variables the manual transmission car advantage drops to `r round(fit3$coefficients[6],2)` on average.
+
+Based on the analysis performed we conclude that:
+
+- The best model considers the variables cylinders (cyl), power (hp), weight (wt) and transmission type (am), and explains `r round(summary(fit3)$r.squared,2)*100`% of the variability in mpg.
+- MPG change negatively with cylinders. For 6 cylinders, on average decreases `r round(fit3$coefficients[2],2)` miles per galon. For 8 cylinders, on average decreases `r round(fit3$coefficients[3],2)` miles per galon.
+- MPG changes negatively with power, on average decreases `r round(fit3$coefficients[4],2)` miles per galon.
+- MPG changes negatively with weight, on average decreases `r round(fit3$coefficients[5],2)` miles per galon.
+- Manual transmission is `r round(fit3$coefficients[6],2)`mpg better than automatic transmission.
+
+
+## Appendix
+
+### A1 - Box Plot
+
+```{r echo=FALSE}
+library(ggplot2)
+g <- ggplot(aes(x=tx_type, y=mpg), data=mtcars) + geom_boxplot(aes(fill=tx_type))
+g <- g + ggtitle("Automatic vs Manual Transmission")+ xlab("Transmission Type") + ylab("Miles per Gallon (MPG)")
+g
+```
+
+### A2 - Scatter Plots
+
+```{r echo=FALSE}
+pairs(mpg ~ ., mtcars)
+```
+
+```{r echo=FALSE}
+pairs(mpg ~ cyl + hp + wt + am, mtcars)
+```
+
+### A3 - Residual Plot
+
+```{r echo=FALSE}
+par(mfrow = c(2,2))
+plot(fit3)
+```
