@@ -37,7 +37,7 @@ A data frame with 32 observations on 11 (numeric) variables.
 
 ```{r}
 data(mtcars)
-head(mtcars,3)
+head(mtcars, 3)
 ```
 
 Example Plot
