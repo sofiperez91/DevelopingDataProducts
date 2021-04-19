@@ -1,0 +1,74 @@
+Developing Data Products Final Project
+========================================================
+author: Sofia Perez
+date: 19/04/2021
+autosize: rotative
+
+Car Performance Analizer App
+========================================================
+type: sub-section
+A *shiny* app was created to analise and predict car performance based on the *mtcars* dataset. The application has two main sections:
+
+1. **Data Analysis**
+  - Allows user to customize a scatterplot based on the dataset.
+  - Explains and calculates which is the best linear regression model for this dataset.
+
+2. **Prediction**
+  - Allows user to introduce car attributes and calculates a performance prediction.
+ 
+mtcars Dataset
+=====================
+type: sub-section
+
+The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models).
+A data frame with 32 observations on 11 (numeric) variables.
+
+- [, 1]	mpg	Miles/(US) gallon
+- [, 2]	cyl	Number of cylinders
+- [, 3]	disp	Displacement (cu.in.)
+- [, 4]	hp	Gross horsepower
+- [, 5]	drat	Rear axle ratio
+- [, 6]	wt	Weight (1000 lbs)
+- [, 7]	qsec	1/4 mile time
+- [, 8]	vs	Engine (0 = V-shaped, 1 = straight)
+- [, 9]	am	Transmission (0 = automatic, 1 = manual)
+- [,10]	gear	Number of forward gears
+- [,11]	carb	Number of carburetors
+
+```{r}
+data(mtcars)
+head(mtcars,3)
+```
+
+Example Plot
+=====================
+```{r}
+shiny::includeHTML("./Project Presentation-figure/plot_ly.html")
+```
+
+Example Prediction Calculation
+=====================
+type: sub-section
+The following calculations were performed in order to predict car performance accourding to user input:
+
+```{r}
+library(caret)
+data<-mtcars[,c(1,2,4,6,9)]
+row.names(data)<-c()
+inTrain  <- createDataPartition(data$mpg, p=0.7, list=FALSE)
+training <- data[inTrain, ]
+testing  <- data[-inTrain, ]
+set.seed(12345)
+control <- trainControl(method="cv", number=3, verboseIter=FALSE)
+Mod_RF <- train(mpg ~ cyl + hp + wt + am, data=training, method="rf", trControl=control)
+Mod_RF$finalModel
+user_input<-data.frame(3500,200,4,0)
+colnames(user_input)<-c("wt","hp","cyl","am")
+predict(Mod_RF, user_input)
+
+``` 
+
+
+
+
+
